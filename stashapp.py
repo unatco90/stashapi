@@ -1251,11 +1251,16 @@ class StashInterface(GQLWrapper):
 		return responses
 	def find_scenes(self, f:dict={}, filter:dict={"per_page": -1}, q:str="", fragment=None, get_count=False):
 		query = """
-		query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {
-			findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {
+		query FindScenes($scene_filter: SceneFilterType, $scene_ids: [Int!], $filter: FindFilterType) {
+			findScenes(scene_filter: $scene_filter, scene_ids: $scene_ids, filter: $filter) {
 				count
 				scenes {
-					...Scene
+					id
+					title
+					tags {
+						id
+						name
+					}
 				}
 			}
 		}
