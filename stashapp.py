@@ -1367,6 +1367,18 @@ class StashInterface(GQLWrapper):
 
 		variables = { "scene_marker_filter": scene_marker_filter }
 		return self._callGraphQL(query, variables)["findSceneMarkers"]["scene_markers"]
+	def update_scene_marker(self, update_input):
+		query = """
+			mutation sceneMarkerUpdate($input:SceneMarkerUpdateInput!) {
+				sceneMarkerUpdate(input: $input) {
+					id
+				}
+			}
+		"""
+		variables = {'input': update_input}
+
+		result = self._callGraphQL(query, variables)
+		return result["sceneMarkerUpdate"]["id"]
 	def create_scene_marker(self, marker_create_input:dict, fragment=None):
 		query = """
 			mutation SceneMarkerCreate($marker_input: SceneMarkerCreateInput!) {
