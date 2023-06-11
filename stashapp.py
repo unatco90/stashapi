@@ -1339,12 +1339,25 @@ class StashInterface(GQLWrapper):
 		return self._callGraphQL(query, {"merge_input":merge_input})["sceneMerge"]
 
 	# Markers CRUD
-	def find_scene_markers(self, scene_id, fragment=None) -> list:
+	def find_scene_markers(self, scene_marker_filter, fragment=None) -> list:
 		query = """
-			query FindSceneMarkers($scene_id: ID) {
-				findScene(id: $scene_id) {
+			query findSceneMarkers($scene_marker_filter: SceneMarkerFilterType, $filter: FindFilterType) {
+				findSceneMarkers(scene_marker_filter: $scene_marker_filter, filter: $filter) {
 					scene_markers {
-						...SceneMarker
+						id
+						title
+						seconds
+						scene {
+							id
+						}
+						primary_tag {
+							id
+							name
+						}
+						tags {
+							id
+							name
+						}
 					}
 				}
 			}
@@ -1352,8 +1365,8 @@ class StashInterface(GQLWrapper):
 		if fragment:
 			query = re.sub(r'\.\.\.SceneMarker', fragment, query)
 
-		variables = { "scene_id": scene_id }
-		return self._callGraphQL(query, variables)["findScene"]["scene_markers"]
+		variables = { "scene_marker_filter": scene_marker_filter }
+		return self._callGraphQL(query, variables)["findSceneMarkers"]["scene_markers"]
 	def create_scene_marker(self, marker_create_input:dict, fragment=None):
 		query = """
 			mutation SceneMarkerCreate($marker_input: SceneMarkerCreateInput!) {
