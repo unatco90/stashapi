@@ -231,6 +231,11 @@ fragment TypeRef on __Type {
 		except ValueError:
 			content = {}
 
+		# Set database locked bit to 0 on fresh response.
+		# Database locked errors send a 200 response code (normal),
+		# so they are not handled correctly without special intervention.
+		database_locked = 0
+
 		for error in content.get("errors", []):
 			message = error.get("message")
 			if len(message) > 2500:
@@ -239,12 +244,19 @@ fragment TypeRef on __Type {
 			if message == "must not be null":
 				code = "DATABASE_ERROR"
 				self.log.error("Database potentially malformed check your DB file")
+			if "database is locked" in message:
+				# If the database is locked, set the database_locked bit.
+				code = "DATABASE_LOCKED"
+				database_locked = 1
 			path = error.get("path", "")
 			fmt_error = f"{code}: {message} {path}".strip()
 			self.log.error(fmt_error)
 
 		if content["data"] == None:
 			self.log.error("GQL data response is null")
+		elif database_locked == 1:
+			# If the database_locked bit is set, log error and proceed to exception.
+			self.log.error("Database is temporarily locked.")
 		elif response.status_code == 200:
 			return content["data"]
 		elif response.status_code == 401:
