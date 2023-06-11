@@ -322,6 +322,26 @@ class StashInterface(GQLWrapper):
 		variables = {'input': tag_update}
 
 		self._callGraphQL(query, variables)
+	def merge_tag(self, tag_in:dict) -> dict:
+		"""merges two tag in stash
+
+		Args:
+			 tag_in (dict): TagCreate input to create a tag.
+
+		Supply a tag ID source, or sources in a list as 'source' and a tag ID destination as 'destination' in the tag_in dict.
+
+		"""
+
+		query = """
+		mutation TagsMerge($source: [ID!]!, $destination: ID!) {
+			tagsMerge(input: { source: $source, destination: $destination }) {
+				...Tag
+				}
+			}
+		"""
+		variables = {'source': tag_in['source'], 'destination': tag_in['destination']}
+		result = self._callGraphQL(query, variables)
+		return result
 	def destroy_tag(self, tag_id:int):
 		"""deletes tag from stash
 
